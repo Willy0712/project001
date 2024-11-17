@@ -1,35 +1,13 @@
-"use client";
-import React, { useState } from "react";
 import Logo from "./Logo";
+import LoginModal from "./LoginModal";
+import { auth } from "../_lib/auth";
+import Link from "next/link";
+import { signOutAction } from "../_lib/actions";
+import SignOut from "./SignOut";
 
-export default function NavigationBar() {
-  const [isAuthenticated, setIsAuthenticatied] = useState(false);
+export default async function NavigationBar() {
+  const session = await auth();
   return (
-    // <div className="flex flex-row items-center gap-4 justify-between space-x-5">
-    //   <Logo />
-    //   <div>
-    //     {" "}
-    //     <input
-    //       type="text"
-    //       name="search"
-    //       id="price"
-    //       className="block w-full rounded-md borde-5 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-    //       placeholder="search"
-    //     />
-    //   </div>
-    //   {!isAuthenticated ? (
-    //     <div>Login in </div>
-    //   ) : (
-    //     <div>
-    //       <ul>
-    //         <li>Home</li>
-    //         <li>About</li>
-    //         <li>Contact</li>
-    //       </ul>
-    //     </div>
-    //   )}
-    // </div>
-
     <header className="sticky top-0 bg-white shadow">
       <div className="container flex flex-col sm:flex-row justify-between items-center mx-auto py-4 px-8">
         <div className="flex items-center text-2xl">
@@ -47,19 +25,37 @@ export default function NavigationBar() {
           />
         </div>
         <div className="hidden md:block">
-          {!isAuthenticated ? (
-            <button
-              type="button"
-              className=" py-3 px-8 text-sm bg-primary-800 rounded-full text-white "
-            >
-              Login
-            </button>
+          {!session?.user ? (
+            <LoginModal />
           ) : (
-            <div>
-              <ul>
-                <li>Home</li>
-                <li>About</li>
-                <li>Contact</li>
+            <div className="relative group">
+              {/* User's Rounded Profile Image */}
+              <img
+                className="w-12 h-12 rounded-full cursor-pointer"
+                src={session?.user?.image || "No photo"}
+                alt={session?.user?.name || "User name"}
+                referrerPolicy="no-referrer"
+              />
+
+              {/* Dropdown Menu */}
+              <ul className="absolute right-0 w-48 bg-white shadow-lg rounded-lg hidden group-hover:block">
+                <li>
+                  <Link
+                    href="/upload"
+                    className="block px-4 py-2 text-gray-800 hover:bg-primary-100 hover:text-gray-900"
+                  >
+                    Upload news
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/account"
+                    className="block px-4 py-2 text-gray-800 hover:bg-primary-100 hover:text-gray-900"
+                  >
+                    Account
+                  </Link>
+                </li>
+                <SignOut />
               </ul>
             </div>
           )}

@@ -3,8 +3,8 @@ import React from "react";
 
 type CardProps = {
   children: React.ReactNode;
-  imageSrc: string | StaticImageData; // Assuming imageSrc is a URL string
-  country: string; // Assuming country is a string
+  imageSrc: string | StaticImageData;
+  country: string;
 };
 
 export default function Card({ children, imageSrc, country }: CardProps) {

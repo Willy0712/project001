@@ -29,7 +29,6 @@ function Modal({ children }: ModalProps) {
 
   const close = () => setOpenName("");
   const open = (windowName: string) => {
-    console.log("Opening Modal:", windowName);
     setOpenName(windowName);
   };
 

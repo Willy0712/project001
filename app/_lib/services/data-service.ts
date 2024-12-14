@@ -17,7 +17,7 @@ export async function createAppUser(newAppUser: Omit<AppUser, "userId">): Promis
     const {data, error} = await supabase.from("app_users").insert([newAppUser]);
     if (error) {
         console.error(error);
-        throw new Error("Guest could not be created");
+        throw new Error("User could not be created");
       }
     
       return data || [];

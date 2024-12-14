@@ -1,13 +1,37 @@
 "use client";
+
 import React, { useState } from "react";
 
 type Suggestion = {
   display_name: string;
+  lat: string; // Latitude provided by Nominatim API
+  lon: string; // Longitude provided by Nominatim API
+  address: {
+    road?: string; // Street name
+    house_number?: string; // Street number
+    city?: string; // City name
+    county?: string; // State name
+    country?: string; // Country name
+  };
 };
 
-export default function AddressAutocomplete() {
-  const [query, setQuery] = useState<string>("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+type AddressAutocompleteProps = {
+  onAddressSelect: (address: {
+    street?: string;
+    number?: string;
+    city?: string;
+    county?: string;
+    country?: string;
+    latitude: string;
+    longitude: string;
+  }) => void; // Callback to send the structured address data to the parent
+};
+
+export default function AddressAutocomplete({
+  onAddressSelect,
+}: AddressAutocompleteProps) {
+  const [query, setQuery] = useState<string>(""); // User's input
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]); // List of suggestions
 
   const fetchSuggestions = async (input: string) => {
     if (!input) {
@@ -16,9 +40,10 @@ export default function AddressAutocomplete() {
     }
 
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${input}&format=json`
+      `https://nominatim.openstreetmap.org/search?q=${input}&format=json&addressdetails=1`
     );
     const data: Suggestion[] = await response.json();
+
     setSuggestions(data);
   };
 
@@ -29,8 +54,27 @@ export default function AddressAutocomplete() {
   };
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
-    setQuery(suggestion.display_name); // Update the input value with the selected suggestion
-    setSuggestions([]); // Clear suggestions after selection
+    console.log("Selected Suggestion:", suggestion);
+    // Extract relevant address details from the suggestion
+    const structuredAddress = {
+      street: suggestion.address.road || "", // Default to empty string if not provided
+      number: suggestion.address.house_number || "",
+      city: suggestion.address.city || "",
+      state: suggestion.address.county || "",
+      country: suggestion.address.country || "",
+      latitude: suggestion.lat,
+      longitude: suggestion.lon,
+    };
+    console.log("Structured Address:", structuredAddress);
+
+    // Update the input value with the selected suggestion's display name
+    setQuery(suggestion.display_name);
+
+    // Send structured address data to the parent component
+    onAddressSelect(structuredAddress);
+
+    // Clear the suggestions
+    setSuggestions([]);
   };
 
   return (

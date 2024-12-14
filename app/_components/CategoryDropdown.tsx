@@ -13,17 +13,21 @@ type Category = {
   sub_categories: SubCategory[];
 };
 
+type CategoryDropdownProps = {
+  name: string;
+  categories: Category[] | null;
+};
+
 export default function CategoryDropdown({
   categories,
-}: {
-  categories: Category[];
-}) {
+  name,
+}: CategoryDropdownProps) {
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const categoryId = parseInt(e.target.value, 10);
 
-    const selectedCategory = categories.find(
+    const selectedCategory = categories?.find(
       (cat) => cat.categoryId === categoryId
     );
     setSubcategories(selectedCategory?.sub_categories || []);
@@ -35,11 +39,12 @@ export default function CategoryDropdown({
       <div>
         <select
           id="categories"
+          name={name}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           onChange={handleCategoryChange}
         >
           <option value="">Choose a category</option>
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <option key={category.categoryId} value={category.categoryId}>
               {category.categoryName || "Unnamed Category"}
             </option>

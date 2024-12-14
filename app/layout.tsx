@@ -2,7 +2,7 @@ import React from "react";
 import NavigationBar from "@/app/_components/NavigationBar";
 import "@/app/_styles/globals.css";
 import { Nunito } from "next/font/google";
-
+import toast, { Toaster } from "react-hot-toast";
 const nunito = Nunito({
   subsets: ["latin"],
   display: "swap",
@@ -29,6 +29,7 @@ export default function RootLAyout({
       <body className={`${nunito.className} bg-gray-50 text-textColor`}>
         <NavigationBar />
         <main>{children}</main>
+        <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
       </body>
     </html>
   );

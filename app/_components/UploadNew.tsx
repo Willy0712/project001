@@ -5,6 +5,11 @@ import CategoryDropdown from "./CategoryDropdown";
 import AddressAutocomplete from "./AddressAutoComplete";
 import MDEditor from "./MDEditor";
 import toast from "react-hot-toast";
+import FileInput from "./FileInput";
+import SpinnerOverlay from "./Spinner";
+import { useFormStatus } from "react-dom";
+import Spinner from "./Spinner";
+import { useRouter } from "next/navigation";
 
 type SubCategory = {
   subCategoryId: number;
@@ -23,6 +28,10 @@ type UploadNewProps = {
 };
 
 export default function UploadNew({ userId, categories }: UploadNewProps) {
+  const { pending } = useFormStatus();
+  const router = useRouter(); // Hook for redirection
+
+  const [loading, setLoading] = useState(false);
   // State to track editor content
   const [content, setContent] = useState<string>("");
   const handleAddressSelect = (address: {
@@ -32,7 +41,6 @@ export default function UploadNew({ userId, categories }: UploadNewProps) {
     latitude: string;
     longitude: string;
   }) => {
-    console.log("Selected Address:", address);
     const addressInput = document.getElementById(
       "selectedAddress"
     ) as HTMLInputElement;
@@ -42,12 +50,21 @@ export default function UploadNew({ userId, categories }: UploadNewProps) {
   };
 
   const handleSubmit = async (formData: FormData): Promise<void> => {
-    const result = await createNew(formData); // Call server action
+    setLoading(true); // Show spinner
+    try {
+      const result = await createNew(formData);
 
-    if (result.success) {
-      toast.success("News uploaded successfully!");
-    } else {
-      toast.error(`Failed to upload news: ${result.error}`);
+      if (result.success) {
+        toast.success("News uploaded successfully!");
+        router.push("/account/news");
+      } else {
+        toast.error(`Failed to upload news: ${result.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An unexpected error occurred!");
+    } finally {
+      setLoading(false); // Hide spinner
     }
   };
 
@@ -87,9 +104,13 @@ export default function UploadNew({ userId, categories }: UploadNewProps) {
             </label>
             <MDEditor name="content" value={content} onChange={setContent} />
           </div>
+          <div className="mt-4">
+            <FileInput name="image" />
+          </div>
           <input type="hidden" name="userId" value={userId} />
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-end mt-4 mb-4">
             <button
+              disabled={pending}
               className="bg-primary-900 text-white py-2 px-4 rounded hover:bg-gray-800 focus:outline-none focus:shadow-outline"
               type="submit"
             >

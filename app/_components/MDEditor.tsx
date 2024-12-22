@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { forwardRef } from "react";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 
@@ -10,9 +10,9 @@ type MDEditorProps = {
   onChange: (value: string) => void;
 };
 
-export default function MDEditor({ name, value, onChange }: MDEditorProps) {
-  return (
-    <>
+const MDEditor = forwardRef<HTMLDivElement, MDEditorProps>(
+  ({ value, onChange, name }, ref) => (
+    <div ref={ref}>
       <SimpleMDE
         value={value}
         onChange={onChange}
@@ -24,6 +24,9 @@ export default function MDEditor({ name, value, onChange }: MDEditorProps) {
         }}
       />
       <input type="hidden" name={name} value={value} />
-    </>
-  );
-}
+    </div>
+  )
+);
+MDEditor.displayName = "MDEditor"; // Set a display name for better debugging
+
+export default MDEditor;

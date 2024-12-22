@@ -31,11 +31,12 @@ const authConfig: NextAuthConfig = {
         return false;
       }
     },
-    // async session({ session, user }) {
-    //   const appUser = await getAppUser(session.user.email);
-    //   session.user.id = toString(appUser.userId);
-    //   return session;
-    // },
+    async session({ session, user }) {
+      const appUser = await getAppUser(session.user.email);
+      const appUserId = appUser.userId;
+      session.user.id = appUserId.toString();
+      return session;
+    },
   },
   pages: {
     signIn: "/", // Not needed unless you want a dedicated page

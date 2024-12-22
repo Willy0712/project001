@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UseFormRegisterReturn } from "react-hook-form";
 
 type SubCategory = {
   subCategoryId: number;
@@ -14,13 +15,16 @@ type Category = {
 };
 
 type CategoryDropdownProps = {
-  name: string;
+  //name: string;
   categories: Category[] | null;
+  registerCategory: UseFormRegisterReturn; // React Hook Form's `register` function for the category field
+  registerSubCategory: UseFormRegisterReturn; // React Hook Form's `register` function for the subcategory field
 };
 
 export default function CategoryDropdown({
   categories,
-  name,
+  registerCategory,
+  registerSubCategory,
 }: CategoryDropdownProps) {
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
 
@@ -39,8 +43,9 @@ export default function CategoryDropdown({
       <div>
         <select
           id="categories"
-          name={name}
+          //name={name}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          {...registerCategory}
           onChange={handleCategoryChange}
         >
           <option value="">Choose a category</option>
@@ -56,6 +61,7 @@ export default function CategoryDropdown({
         <select
           id="subcategories"
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          {...registerSubCategory}
           disabled={!subcategories.length}
         >
           <option value="">Choose a subcategory</option>

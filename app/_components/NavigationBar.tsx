@@ -4,9 +4,13 @@ import { auth } from "../_lib/auth";
 import Link from "next/link";
 import { signOutAction } from "../_lib/actions";
 import SignOut from "./SignOut";
+import { useState } from "react";
+import { useRouter } from "next/router";
+import SearchInput from "./SearchInput";
 
 export default async function NavigationBar() {
   const session = await auth();
+
   return (
     <header className="sticky top-0 bg-white shadow">
       <div className="container flex flex-col sm:flex-row justify-between items-center mx-auto py-4 px-8">
@@ -15,15 +19,8 @@ export default async function NavigationBar() {
             <Logo />
           </div>
         </div>
-        <div className="flex mt-4 sm:mt-0">
-          <input
-            type="text"
-            name="search"
-            id="price"
-            className="block w-full rounded-full borde-5 py-1.5 pl-7 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-transparent sm:text-sm sm:leading-6"
-            placeholder="search"
-          />
-        </div>
+        <SearchInput />
+
         <div className="hidden md:block">
           {!session?.user ? (
             <LoginModal />

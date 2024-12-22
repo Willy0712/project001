@@ -1,7 +1,10 @@
 "use client";
 import React, { useState } from "react";
-
-export default function FileUpload({ name }: { name: string }) {
+type FileUploadProps = {
+  name: string;
+  onFilesChange: (files: File[]) => void; // Callback to pass files to parent
+};
+export default function FileUpload({ name, onFilesChange }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,11 +18,15 @@ export default function FileUpload({ name }: { name: string }) {
     }
 
     setError(null); // Clear any existing error
-    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+    const updatedFiles = [...files, ...selectedFiles];
+    setFiles(updatedFiles);
+    onFilesChange(updatedFiles);
   };
 
   const handleRemoveFile = (index: number) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    const updatedFiles = files.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
+    onFilesChange(updatedFiles); // Pass updated files to parent
   };
 
   return (

@@ -2,6 +2,9 @@ import supabase from "./supabase";
 import { Database } from "@/database.types";
 
 type AppUser = Database["public"]["Tables"]["app_users"]["Row"];
+type NewsRow = Database["public"]["Tables"]["news"]["Row"];
+type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
+type SubCategoryRow = Database["public"]["Tables"]["sub_categories"]["Row"];
 
 export async function getAppUser(email: string) {
  
@@ -23,6 +26,40 @@ export async function createAppUser(newAppUser: Omit<AppUser, "userId">): Promis
       return data || [];
 }
 
+export async function getNewsWithCategoriesAndSubcategories(userId: number) {
+  const { data, error } = await supabase
+  .from("news")
+  .select(`
+    newsId,
+    newsTitle,
+    newsDescription,
+    createdAt,
+    modifiedAt,
+    street,
+    city,
+    state,
+    country,
+    latitude,
+    longitude,
+    userId,
+    categories:categoryId (
+      categoryId,
+      categoryName
+    ),
+    sub_categories:subCategoryId (
+      subCategoryId,
+      subCategoryName
+    )
+  `)
+  .eq("userId", userId);
+
+  if (error) {
+    console.error("Error fetching news:", error.message);
+    throw new Error("Failed to fetch news.");
+  }
+
+  return data;
+}
 
 
 export async function getCategoriesWithSubcategories() {
@@ -39,4 +76,24 @@ export async function getCategoriesWithSubcategories() {
 
   return data; // Array of categories with nested subcategories
 }
+
+export async function getPhotosForNews(newsId: number) {
+  const { data, error } = await supabase
+    .from("media_table")
+    .select(`
+      id,
+      url,
+      type,
+      createdAt
+    `)
+    .eq("newsId", newsId);
+
+  if (error) {
+    console.error("Error fetching photos:", error.message);
+    throw new Error("Failed to fetch photos.");
+  }
+
+  return data;
+}
+
 

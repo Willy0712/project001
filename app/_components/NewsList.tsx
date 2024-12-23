@@ -23,11 +23,11 @@ type NewsWithCategoriesAndSubCategories = {
   latitude: number | null;
   longitude: number | null;
   userId: number | null;
-  categories: { categoryId: number; categoryName: string | null }; // Supabase returns an array even for single relation
+  categories: { categoryId: number; categoryName: string | null }[]; // Supabase returns an array even for single relation
   sub_categories: {
     subCategoryId: number;
     subCategoryName: string | null;
-  }; // Supabase returns an array even for single relation
+  }[]; // Supabase returns an array even for single relation
   photos: Photo[];
 };
 type NewsListProps = {

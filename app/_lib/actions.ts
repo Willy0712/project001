@@ -19,121 +19,6 @@ export async function signOutAction() {
   await signOut({ redirectTo: "/" });
 }
 
-type NewsData = {
-  title: string;
-  categoryId: number;
-  subCategoryId: number;
-  address: {
-    street?: string;
-    state?: string;
-    country?: string;
-    latitude: string;
-    longitude: string;
-  };
-  content: string;
-};
-
-// export async function createNew(formData: FormData): Promise<{ success: boolean; error?: string }> {
-//   const session = await auth();
-//   if (!session) throw new Error("You must be logged in");
-//   try {
-
-//     const data = Object.fromEntries(formData.entries());    // Extract data from FormData
-//     const title = formData.get("title") as string;
-//     const categoryId = parseInt(formData.get("categoryId") as string, 10);
-//     const subCategoryId = parseInt(formData.get("subCategoryId") as string, 10);
-//     const description = formData.get("content") as string;
-//     const address = JSON.parse(formData.get("selectedAddress") as string);
-//     const userId = parseInt(formData.get("userId") as string, 10);
-//     const images = formData.getAll("image") as File[]; // Get all images as File objects
-    
-
-//     if (!title || !categoryId || !description || images.length === 0) {
-//       throw new Error("All required fields and at least one image must be provided.");
-//     }
-//     // Validate with Zod
-//     const validatedData = uploadNewsSchemaServer.parse({
-//       ...data,
-//       categoryId: data.categoryId,
-//       subCategoryId: data.subCategoryId,
-//       userId: data.userId,
-//       image: images,
-//     });
-
-//     // Map address fields
-//     const { street, state, country, latitude, longitude, number, city } = address;
-//     const fullStreet = `${street} ${number}`;
-
-//     // Prepare the data object for the news table
-//     const newsData = {
-//       newsTitle: title,
-//       newsDescription: description,
-//       categoryId,
-//       subCategoryId,
-//       street: fullStreet,
-//       city,
-//       state,
-//       country,
-//       latitude: parseFloat(latitude),
-//       longitude: parseFloat(longitude),
-//       createdAt: new Date().toISOString(),
-//       modifiedAt: new Date().toISOString(),
-//       userId,
-//     };
-
-//     // Insert into the `news` table
-//     const { data: news, error: newsError } = await supabase.from("news").insert([newsData]).select("newsId").single();
-
-//     if (newsError || !news) {
-//       throw new Error(newsError?.message || "Failed to insert news.");
-//     }
-
-//     const newsId = news.newsId;
-
-//     // Upload each image to Supabase Storage and save its URL in `media_table`
-//     for (const image of images) {
-//       const fileName = `${Math.random()} - ${image.name}`.replaceAll(
-//     "/",
-//     ""
-//   );; // Unique file name
-//       // const filePath = `news_images/${fileName}`;
-
-//       // Upload to Supabase Storage
-//       const { data: storageData, error: storageError } = await supabase.storage.from("pictures").upload(fileName, image);
-
-//       if (storageError) {
-//         console.error("Failed to upload image:", storageError.message);
-//         continue; // Skip this image and proceed with the next
-//       }
-
-//       const imageUrl = `${supabaseUrl}/storage/v1/object/public/pictures/${fileName}`;
-
-//       // Insert the image URL into the `media_table`
-//       const mediaData = {
-//         newsId,
-//         url: imageUrl,
-//         type: image.type,
-//         createdAt: new Date().toISOString(),
-//       };
-
-//       const { error: mediaError } = await supabase.from("media_table").insert([mediaData]);
-
-//       if (mediaError) {
-//         console.error("Failed to save media data:", mediaError.message);
-//       }
-//     }
-
-//     // Revalidate the path after successful submission
-//     revalidatePath("/account/upload");
-    
-
-//     return { success: true };
-//   } catch (err) {
-//     console.error(err);
-//     return { success: false, error: (err as Error).message };
-//   }
-// }
-
 export async function createNew(formData: FormData): Promise<{
   success: boolean;
   error?: string;
@@ -278,22 +163,31 @@ if (mediaError) {
 
 
 export async function searchNews(query: string) {
+  console.log("query", query)
   const { data, error } = await supabase
-    .from("news")
-    .select(`
-      newsId,
-      newsTitle,
-      newsDescription,
-      createdAt,
-      street,
-      city,
-      state,
-      country
-    `)
-    .or(
-      `city.ilike.%${query}%,state.ilike.%${query}%,country.ilike.%${query}%`
+  .from("news")
+  .select(`
+    newsId,
+    newsTitle,
+    newsDescription,
+    createdAt,
+    street,
+    city,
+    state,
+    country,
+    photos:media_table (
+      id,
+      url,
+      type,
+      createdAt
     )
-    .order("createdAt", { ascending: false });
+  `)
+  .or(`city.ilike.%${query}%,state.ilike.%${query}%,country.ilike.%${query}%`)
+  .order("createdAt", { ascending: false });
+  console.log("data", data)
+
+  
+  
 
   if (error) {
     console.error("Error searching news:", error.message);
@@ -302,6 +196,60 @@ export async function searchNews(query: string) {
 
   return data;
 }
+
+async function castVote(userId: number, newsId: number, voteValue: number) {
+  // Check if the user has already voted
+  // const { data: existingVote } = await supabase
+  //   .from("votes")
+  //   .select("voteValue")
+  //   .eq("userId", userId)
+  //   .eq("newsId", newsId)
+  //   .single();
+
+  // if (existingVote) {
+  //   // If the same vote is clicked again, reset the vote to neutral
+  //   if (existingVote.voteValue === voteValue) {
+  //     await supabase
+  //       .from("votes")
+  //       .delete()
+  //       .eq("userId", userId)
+  //       .eq("newsId", newsId);
+  //   } else {
+  //     // Update the existing vote
+  //     await supabase
+  //       .from("votes")
+  //       .update({ voteValue, updatedAt: new Date() })
+  //       .eq("userId", userId)
+  //       .eq("newsId", newsId);
+  //   }
+  // } else {
+  //   // If no previous vote exists, insert a new vote
+  //   await supabase.from("votes").insert({
+  //     userId,
+  //     newsId,
+  //     voteValue,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //   });
+  // }
+
+  // // Recalculate aggregated votes for the news item
+  // const { data: votes } = await supabase
+  //   .from("votes")
+  //   .select("voteValue")
+  //   .eq("newsId", newsId);
+
+  // const upvotes = votes.filter((v) => v.voteValue === 1).length;
+  // const downvotes = votes.filter((v) => v.voteValue === -1).length;
+  // const voteScore = upvotes - downvotes;
+
+  // // Update the aggregated counts in the news table
+  // await supabase
+  //   .from("news")
+  //   .update({ upvotes, downvotes, voteScore })
+  //   .eq("newsId", newsId);
+}
+
 
 
 

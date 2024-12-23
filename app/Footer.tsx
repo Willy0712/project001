@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="py-6">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-gray-600">
-          &copy; {currentYear} BnB. All rights reserved.
+          &copy; {currentYear} Postyy All rights reserved.
         </p>
       </div>
     </footer>

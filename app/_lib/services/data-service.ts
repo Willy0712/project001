@@ -2,16 +2,14 @@ import supabase from "./supabase";
 import { Database } from "@/database.types";
 
 type AppUser = Database["public"]["Tables"]["app_users"]["Row"];
-type NewsRow = Database["public"]["Tables"]["news"]["Row"];
-type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
-type SubCategoryRow = Database["public"]["Tables"]["sub_categories"]["Row"];
+
 
 export async function getAppUser(email: string) {
  
     const {data, error} = await supabase.from("app_users").select("*").eq("email", email).single();
     if (error) {
         console.error(error);
-        throw new Error("Guest could not be found");
+        throw new Error("User could not be found");
       }
     return data;
 }
@@ -49,9 +47,57 @@ export async function getNewsWithCategoriesAndSubcategories(userId: number) {
     sub_categories:subCategoryId (
       subCategoryId,
       subCategoryName
+    ),
+    photos:media_table (
+    id,
+    url,
+    type,
+    createdAt
     )
   `)
   .eq("userId", userId);
+
+  if (error) {
+    console.error("Error fetching news:", error.message);
+    throw new Error("Failed to fetch news.");
+  }
+
+  return data;
+}
+
+export async function getPublicNewsWithCategoriesAndSubcategories(newId: number) {
+  const { data, error } = await supabase
+    .from("news")
+    .select(`
+      newsId,
+      newsTitle,
+      newsDescription,
+      createdAt,
+      modifiedAt,
+      street,
+      city,
+      state,
+      country,
+      latitude,
+      longitude,
+      userId,
+      categories:categoryId (
+        categoryId,
+        categoryName
+      ),
+      sub_categories:subCategoryId (
+        subCategoryId,
+        subCategoryName
+      ),
+      photos:media_table (
+        id,
+        url,
+        type,
+        createdAt
+      )
+    `)
+    .eq("newsId", newId)
+    .single(); // Ensures a single object is returned
 
   if (error) {
     console.error("Error fetching news:", error.message);

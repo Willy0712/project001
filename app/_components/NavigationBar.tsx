@@ -2,10 +2,9 @@ import Logo from "./Logo";
 import LoginModal from "./LoginModal";
 import { auth } from "../_lib/auth";
 import Link from "next/link";
-import { signOutAction } from "../_lib/actions";
+
 import SignOut from "./SignOut";
-import { useState } from "react";
-import { useRouter } from "next/router";
+
 import SearchInput from "./SearchInput";
 
 export default async function NavigationBar() {

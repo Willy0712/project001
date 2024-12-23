@@ -25,11 +25,11 @@ type NewsWithCategoriesAndSubCategories = {
   longitude: number | null;
   userId: number | null;
   photos: Photo[];
-  categories: { categoryId: number; categoryName: string | null }; // Supabase returns an array even for single relation
+  categories: { categoryId: number; categoryName: string | null }[]; // Supabase returns an array even for single relation
   sub_categories: {
     subCategoryId: number;
     subCategoryName: string | null;
-  }; // Supabase returns an array even for single relation
+  }[]; // Supabase returns an array even for single relation
 };
 type NewsListProps = {
   news: NewsWithCategoriesAndSubCategories;
@@ -51,9 +51,12 @@ export default function NewsCard({ news, onDelete }: NewsListProps) {
     longitude,
     userId,
     photos,
-    categories: { categoryName },
-    sub_categories: { subCategoryName },
+    categories,
+    sub_categories,
   } = news;
+
+  const categoryName = categories[0]?.categoryName || "Unknown";
+  const subCategoryName = sub_categories[0]?.subCategoryName || "Unknown";
 
   return (
     <div className="flex border border-primary-800">
@@ -77,7 +80,7 @@ export default function NewsCard({ news, onDelete }: NewsListProps) {
           <p className="text-xl font-semibold text-accent-400">${street}</p>
           <p className="text-primary-300">&bull;</p>
           <p className="text-lg text-primary-300">
-            {city}
+            {categoryName}
             {state}
             {state}
             {country}

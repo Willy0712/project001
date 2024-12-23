@@ -1,22 +1,13 @@
 import NewsList from "@/app/_components/NewsList";
 import { auth } from "@/app/_lib/auth";
-import {
-  getNewsWithCategoriesAndSubcategories,
-  getPhotosForNews,
-} from "@/app/_lib/services/data-service";
+import { getNewsWithCategoriesAndSubcategories } from "@/app/_lib/services/data-service";
 import React from "react";
 
 export default async function page() {
   const session = await auth();
   const userId = Number(session?.user?.id);
   const news = await getNewsWithCategoriesAndSubcategories(userId);
-  // Fetch photos for each news
-  const newsWithPhotos = await Promise.all(
-    news.map(async (n) => {
-      const photos = await getPhotosForNews(n.newsId);
-      return { ...n, photos };
-    })
-  );
+  console.log("news", news);
 
   return (
     <div>
@@ -28,7 +19,7 @@ export default async function page() {
           </a>
         </p>
       ) : (
-        <NewsList news={newsWithPhotos} />
+        <NewsList news={news} />
       )}
     </div>
   );

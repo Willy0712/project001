@@ -1,10 +1,8 @@
 "use server";
 
-import { PostgrestError } from "@supabase/supabase-js";
 import { auth, signIn, signOut } from "./auth";
 import supabase from "./services/supabase";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { uploadNewsSchemaServer } from "./validation";
 import { ZodError } from "zod";
 import { getNewsWithCategoriesAndSubcategories } from "./services/data-service";
@@ -67,6 +65,9 @@ export async function createNew(formData: FormData): Promise<{
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
       userId,
+      upVotes: 0,
+      downVotes: 0,
+      votesScore: 0,
     };
 
     // Insert into the `news` table
@@ -111,6 +112,7 @@ export async function createNew(formData: FormData): Promise<{
     }
 
     revalidatePath("/account/upload");
+    
     return { success: true };
   } catch (err) {
     if (err instanceof ZodError) {
@@ -187,7 +189,7 @@ export async function searchNews(query: string) {
   console.log("data", data)
 
   
-  
+  revalidatePath(`/listnews/${query}`)
 
   if (error) {
     console.error("Error searching news:", error.message);
@@ -197,58 +199,162 @@ export async function searchNews(query: string) {
   return data;
 }
 
-async function castVote(userId: number, newsId: number, voteValue: number) {
-  // Check if the user has already voted
-  // const { data: existingVote } = await supabase
-  //   .from("votes")
-  //   .select("voteValue")
-  //   .eq("userId", userId)
-  //   .eq("newsId", newsId)
-  //   .single();
 
-  // if (existingVote) {
-  //   // If the same vote is clicked again, reset the vote to neutral
-  //   if (existingVote.voteValue === voteValue) {
-  //     await supabase
-  //       .from("votes")
-  //       .delete()
-  //       .eq("userId", userId)
-  //       .eq("newsId", newsId);
-  //   } else {
-  //     // Update the existing vote
-  //     await supabase
-  //       .from("votes")
-  //       .update({ voteValue, updatedAt: new Date() })
-  //       .eq("userId", userId)
-  //       .eq("newsId", newsId);
-  //   }
-  // } else {
-  //   // If no previous vote exists, insert a new vote
-  //   await supabase.from("votes").insert({
-  //     userId,
-  //     newsId,
-  //     voteValue,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //   });
-  // }
 
-  // // Recalculate aggregated votes for the news item
-  // const { data: votes } = await supabase
-  //   .from("votes")
-  //   .select("voteValue")
-  //   .eq("newsId", newsId);
 
-  // const upvotes = votes.filter((v) => v.voteValue === 1).length;
-  // const downvotes = votes.filter((v) => v.voteValue === -1).length;
-  // const voteScore = upvotes - downvotes;
+export async function castVote(userId: number, newsId: number, voteValue: number) {
+  const { data: existingVote } = await supabase
+    .from("votes")
+    .select("voteValue")
+    .eq("userId", userId)
+    .eq("newsId", newsId)
+    .single();
 
-  // // Update the aggregated counts in the news table
-  // await supabase
-  //   .from("news")
-  //   .update({ upvotes, downvotes, voteScore })
-  //   .eq("newsId", newsId);
+    console.log("existingVote", existingVote)
+    console.log("userId", userId)
+    console.log("newsId", newsId)
+
+  // Calculate changes
+  const upvotesChange = voteValue === 1 ? 1 : existingVote?.voteValue === 1 ? -1 : 0;
+  const downvotesChange = voteValue === -1 ? 1 : existingVote?.voteValue === -1 ? -1 : 0;
+  const voteScoreChange = existingVote
+    ? voteValue - (existingVote.voteValue || 0)
+    : voteValue;
+
+    console.log("upvotesChange", upvotesChange)
+    console.log("downvotesChange", downvotesChange)
+    console.log("voteScoreChange", voteScoreChange)
+
+  if (existingVote) {
+    if (existingVote.voteValue === voteValue) {
+      // Reset vote
+      await supabase.from("votes").delete().eq("userId", userId).eq("newsId", newsId);
+    } else {
+      // Change vote
+      await supabase
+        .from("votes")
+        .update({ voteValue })
+        .eq("userId", userId)
+        .eq("newsId", newsId);
+    }
+  } else {
+    // Insert new vote
+    await supabase.from("votes").insert({ userId, newsId, voteValue });
+  }
+
+  // Fetch current values from the news table
+  const { data: currentNews, error: fetchError } = await supabase
+    .from("news")
+    .select("upVotes, downVotes, votesScore")
+    .eq("newsId", newsId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching current news values:", fetchError.message);
+    throw new Error("Failed to fetch current news values.");
+  }
+
+  // Calculate new values
+  const updatedUpvotes = (currentNews?.upVotes || 0) + upvotesChange;
+  const updatedDownvotes = (currentNews?.downVotes || 0) + downvotesChange;
+  const updatedVoteScore = (currentNews?.votesScore || 0) + voteScoreChange;
+
+  console.log("updatedUpvotes", updatedUpvotes)
+  console.log("updatedDownvotes", updatedDownvotes)
+  console.log("updatedVoteScore", updatedVoteScore)
+
+  // Update the news table
+  const { error: updateError } = await supabase
+    .from("news")
+    .update({
+      upVotes: updatedUpvotes,
+      downVotes: updatedDownvotes,
+      votesScore: updatedVoteScore,
+    })
+    .eq("newsId", newsId);
+revalidatePath(`account/newdetail/${newsId}`)
+  if (updateError) {
+    console.error("Error updating news table:", updateError.message);
+    throw new Error("Failed to update news table");
+  }
 }
+
+export async function addComment(formData: FormData
+): Promise<{ success: boolean; error?: string }> {
+  const userId = Number(formData.get("userId"));
+  const newsId = Number(formData.get("newsId"));
+  const commentText = formData.get("commentText") as string;
+
+  if (!commentText.trim()) {
+    return { success: false, error: "Comment text is required" };
+  }
+
+  try {
+    const { error } = await supabase
+      .from("comments")
+      .insert({ userId, newsId, commentText });
+
+    if (error) {
+      console.error("Error adding comment:", error.message);
+      throw new Error("Failed to add comment");
+    }
+    revalidatePath(`account/newdetail/${newsId}`)
+
+    return { success: true };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: "Failed to add comment" };
+  }
+}
+
+
+export async function deleteComment(commentId: number) {
+  try {
+    const { data, error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("commentId", commentId)
+      .select("newsId");
+
+      const newsId = data?.[0]?.newsId; // Assuming data is an array
+
+    if (error) {
+      console.error("Error deleting comment:", error.message);
+      return { success: false, error: "Failed to delete comment" };
+    }
+    revalidatePath(`account/newdetail/${newsId}`)
+
+    return { success: true };
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    return { success: false, error: "Failed to delete comment" };
+  }
+}
+
+export async function updateComment(commentId: number, commentText: string) {
+  try {
+    const { error } = await supabase
+      .from("comments")
+      .update({ commentText, updatedAt: new Date().toISOString() })
+      .eq("commentId", commentId);
+
+    if (error) {
+      console.error("Error updating comment:", error.message);
+      return { success: false, error: "Failed to update comment" };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Error updating comment:", err);
+    return { success: false, error: "Failed to update comment" };
+  }
+}
+
+
+
+
+
+
 
 
 

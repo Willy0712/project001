@@ -4,7 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { getPhotosForNews } from "../_lib/services/data-service";
 import Image from "next/image";
-import DeleteNew from "./DeleteNew";
+import DeleteWithId from "./DeleteWithId";
 type Photo = {
   id: number;
   url: string | null;
@@ -98,7 +98,7 @@ export default function NewsCard({ news, onDelete }: NewsListProps) {
             <PencilSquareIcon className="h-5 w-5 text-primary-600 group-hover:text-primary-800 transition-colors" />
             <span className="mt-1">Edit</span>
           </Link>
-          <DeleteNew newId={newsId} onDelete={onDelete} />
+          <DeleteWithId id={newsId} onDelete={onDelete} />
         </>
       </div>
     </div>

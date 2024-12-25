@@ -4,28 +4,23 @@ import SpinnerMini from "./SpinnerMini";
 import toast from "react-hot-toast";
 
 type DeleteNewProps = {
-  newId: number;
+  id: number;
   onDelete: (newId: number) => void;
 };
 
-export default function DeleteNew({ newId, onDelete }: DeleteNewProps) {
+export default function DeleteWithId({ id, onDelete }: DeleteNewProps) {
   const [isPending, startTransition] = useTransition();
-
-  //   function handleDelete() {
-  //     if (confirm("Are you sure you want to delete this reservation?"))
-  //       startTransition(() => onDelete(newId));
-  //   }
 
   const handleDelete = () => {
     toast(
       (t) => (
         <div className="p-4">
-          <p className="text-lg">Are you sure you want to delete this news?</p>
+          <p className="text-lg">Are you sure you want to delete?</p>
           <div className="mt-3 flex gap-4 justify-center">
             <button
               onClick={() => {
                 toast.dismiss(t.id); // Dismiss the toast
-                onDelete(newId); // Call the onDelete method
+                onDelete(id); // Call the onDelete method
               }}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
             >

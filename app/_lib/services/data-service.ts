@@ -81,6 +81,9 @@ export async function getPublicNewsWithCategoriesAndSubcategories(newId: number)
       latitude,
       longitude,
       userId,
+      upVotes,
+      downVotes,
+      votesScore,
       categories:categoryId (
         categoryId,
         categoryName
@@ -141,5 +144,63 @@ export async function getPhotosForNews(newsId: number) {
 
   return data;
 }
+
+/**
+ * Fetches the user's vote for a specific news item.
+ * @param newsId - The ID of the news item.
+ * @param userId - The ID of the user.
+ * @returns The vote value (1 for upvote, -1 for downvote, or 0 if no vote).
+ */
+export async function getUserVote(newsId: number, userId: number): Promise<number | null> {
+  try {
+    const { data, error } = await supabase
+      .from("votes")
+      .select("voteValue")
+      .eq("newsId", newsId)
+      .eq("userId", userId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching user vote:", error.message);
+      return null;
+    }
+
+    return data?.voteValue || null;
+  } catch (err) {
+    console.error("Unexpected error fetching user vote:", err);
+    return null;
+  }
+}
+
+
+
+
+
+export async function getComments(newsId: number) {
+  try {
+    const { data, error } = await supabase
+      .from("comments")
+      .select("commentId, commentText, createdAt, userId")
+      .eq("newsId", newsId)
+      .order("createdAt", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching comments:", error.message);
+      throw new Error("Failed to fetch comments");
+    }
+
+    return data;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+
+
+
+
+
+
 
 

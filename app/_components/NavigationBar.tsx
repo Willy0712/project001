@@ -37,7 +37,7 @@ export default async function NavigationBar() {
               <ul className="absolute right-0 w-48 bg-white shadow-lg rounded-lg hidden group-hover:block">
                 <li>
                   <Link
-                    href="/upload"
+                    href="account/upload"
                     className="block px-4 py-2 text-gray-800 hover:bg-primary-100 hover:text-gray-900"
                   >
                     Upload news

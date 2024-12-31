@@ -2,8 +2,9 @@ import React from "react";
 import NavigationBar from "@/app/_components/NavigationBar";
 import "@/app/_styles/globals.css";
 import { Nunito } from "next/font/google";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import Footer from "./Footer";
+import { Metadata } from "next";
 const nunito = Nunito({
   subsets: ["latin"],
   display: "swap",
@@ -12,12 +13,13 @@ const nunito = Nunito({
 });
 console.log(nunito);
 
-export const metaData = {
+export const metadata = {
   title: {
-    template: "%s | Postyy",
-    default: "welcome to Postyy",
+    template: "%s  factproovers",
+    default: "Welcome / Factproovers",
+    description:
+      "Factproovers is a platform that allows users to share news and verify the authenticity of news shared by other users.",
   },
-  description: "An app for sharing news to be verified",
 };
 
 export default function RootLAyout({

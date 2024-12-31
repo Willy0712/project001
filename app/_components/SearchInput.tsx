@@ -1,5 +1,4 @@
 "use client";
-import { ArrowRightCircleIcon } from "@heroicons/react/20/solid";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 

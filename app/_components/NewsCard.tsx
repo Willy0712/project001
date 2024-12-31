@@ -74,18 +74,12 @@ export default function NewsCard({ news, onDelete }: NewsListProps) {
           <h3 className="text-xl font-semibold">{newsTitle}</h3>
         </div>
         {newsDescription}
-        <p className="text-lg text-primary-300">Tessst</p>
 
         <div className="flex gap-5 mt-auto items-baseline">
-          <p className="text-xl font-semibold text-accent-400">${street}</p>
-          <p className="text-primary-300">&bull;</p>
-          <p className="text-lg text-primary-300">
-            {categoryName}
-            {state}
-            {state}
-            {country}
-          </p>
-          <p className="ml-auto text-sm text-primary-400">Tesst</p>
+          <p className="text-xl font-semibold">${street}</p>
+          <p className="text-lg">${city}</p>
+          <p className="text-lg">${state}</p>
+          <p className="text-lg">${country}</p>
         </div>
       </div>
 

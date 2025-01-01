@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { uploadNewsSchemaServer } from "./validation";
 import { ZodError } from "zod";
 import { getNewsWithCategoriesAndSubcategories } from "./services/data-service";
+import { redirect } from "next/dist/server/api-utils";
 
 const supabaseUrl = process.env.SUPABASE_URL as string;
 
@@ -188,7 +189,6 @@ export async function searchNews(query: string) {
   .order("createdAt", { ascending: false });
   console.log("data", data)
 
-  
   revalidatePath(`/listnews/${query}`)
 
   if (error) {

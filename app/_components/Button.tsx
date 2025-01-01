@@ -9,7 +9,7 @@ export default function Button({ children, onClick }: ButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className="py-4 px-12 bg-primary-800 hover:bg-primary-700 rounded-full text-white"
+      className="py-2 px-3 sm:py-4 sm:px-7 lg:py-2 lg:px-7 bg-primary-800 hover:bg-primary-700 rounded-full text-white text-sm sm:text-base lg:text-lg transition duration-200 ease-in-out"
     >
       {children}
     </button>

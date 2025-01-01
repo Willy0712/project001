@@ -14,11 +14,11 @@ const authConfig: NextAuthConfig = {
       return !!auth?.user;
     },
     async signIn({user}) {
+      
      
       try {
         const existingGuest = await getAppUser(user.email as string);
-        
-        if (!existingGuest) {
+        if (existingGuest === null) {
           await createAppUser({
             email: user.email as string,
             fullName: user.name as string,
@@ -33,7 +33,7 @@ const authConfig: NextAuthConfig = {
     },
     async session({ session, user }) {
       const appUser = await getAppUser(session.user.email);
-      const appUserId = appUser.userId;
+      const appUserId = appUser?.userId as number;
       session.user.id = appUserId.toString();
       return session;
     },

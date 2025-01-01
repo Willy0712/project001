@@ -19,7 +19,7 @@ export default async function Page() {
   const user = await getAppUser(session?.user?.email as string);
   return (
     <div>
-      <UploadNew categories={categories} userId={user.userId} />
+      <UploadNew categories={categories} userId={user?.userId as number} />
     </div>
   );
 }

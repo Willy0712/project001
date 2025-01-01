@@ -7,10 +7,7 @@ type AppUser = Database["public"]["Tables"]["app_users"]["Row"];
 export async function getAppUser(email: string) {
  
     const {data, error} = await supabase.from("app_users").select("*").eq("email", email).single();
-    if (error) {
-        console.error(error);
-        throw new Error("User could not be found");
-      }
+
     return data;
 }
 

@@ -7,7 +7,7 @@ export default async function page() {
   const session = await auth();
   const userId = Number(session?.user?.id);
   const news = await getNewsWithCategoriesAndSubcategories(userId);
-  console.log("news", news);
+  console.log("news account news page", news);
 
   return (
     <div>

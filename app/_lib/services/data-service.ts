@@ -40,11 +40,11 @@ export async function getNewsWithCategoriesAndSubcategories(userId: number) {
     latitude,
     longitude,
     userId,
-    categories:categoryId (
+    categoryId:categories  (
       categoryId,
       categoryName
     ),
-    sub_categories:subCategoryId (
+     subCategoryId:sub_categories  (
       subCategoryId,
       subCategoryName
     ),

@@ -1,5 +1,4 @@
 "use client";
-import { Database } from "@/database.types";
 import React, { useOptimistic } from "react";
 import NewsCard from "./NewsCard";
 import { deleteNew } from "../_lib/actions";
@@ -23,11 +22,11 @@ type NewsWithCategoriesAndSubCategories = {
   latitude: number | null;
   longitude: number | null;
   userId: number | null;
-  categories: { categoryId: number; categoryName: string | null }[]; // Supabase returns an array even for single relation
-  sub_categories: {
+  categoryId: { categoryId: number; categoryName: string | null } | null; // Supabase returns an array even for single relation
+  subCategoryId: {
     subCategoryId: number;
     subCategoryName: string | null;
-  }[]; // Supabase returns an array even for single relation
+  } | null; // Supabase returns an array even for single relation
   photos: Photo[];
 };
 type NewsListProps = {

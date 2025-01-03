@@ -9,7 +9,7 @@ export default function LoginMessage() {
         <Link href="/" className="underline text-accent-500">
           login
         </Link>{" "}
-        to vote this
+        to vote and comment this
         <br /> new
       </p>
     </div>

@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import supabase from "./supabase";
 import { Database } from "@/database.types";
 
@@ -101,6 +102,7 @@ export async function getPublicNewsWithCategoriesAndSubcategories(newId: number)
 
   if (error) {
     console.error("Error fetching news:", error.message);
+    notFound();
     throw new Error("Failed to fetch news.");
   }
 

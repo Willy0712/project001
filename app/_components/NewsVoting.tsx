@@ -48,7 +48,7 @@ export default function NewsVoting({
   return (
     <div>
       <div className="flex items-center mb-4">
-        {[...Array(5)].map((_, index) => (
+        {/* {[...Array(5)].map((_, index) => (
           <svg
             key={index}
             xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +62,7 @@ export default function NewsVoting({
               clipRule="evenodd"
             />
           </svg>
-        ))}
+        ))} */}
         <span className="ml-2 text-gray-600"> {votesScore} votes</span>
       </div>
       <div className="flex items-center gap-2">

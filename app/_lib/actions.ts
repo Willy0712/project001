@@ -142,6 +142,29 @@ export async function deleteNew(newId: number) {
   if (!gappNewIds.includes(newId))
     throw new Error("You are not allowed to delete this id");
 
+  // Delete related votes
+  const { error: votesError } = await supabase
+    .from("votes")
+    .delete()
+    .eq("newsId", newId);
+
+  if (votesError) {
+    console.error("Error deleting related votes:", votesError.message);
+    throw new Error("Failed to delete related votes");
+  }
+  // Delete related comments
+  const { error: commentsError } = await supabase
+    .from("comments")
+    .delete()
+    .eq("newsId", newId);
+
+  if (commentsError) {
+    console.error("Error deleting related comments:", commentsError.message);
+    throw new Error("Failed to delete related comments");
+  }
+
+  //Dele related media
+
   const { error: mediaError } = await supabase
   .from("media_table")
   .delete()

@@ -24,6 +24,7 @@ const authConfig: NextAuthConfig = {
             fullName: user.name as string,
             userCreatedAt: new Date().toISOString(),
             userModifiedAt: new Date().toISOString(),
+            imageURL: user.image as string,
           })
         }
         return true;

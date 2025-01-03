@@ -1,6 +1,7 @@
 import { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 import ProductImages from "../../_components/ProductImages";
 import {
+  getAuthorDetailsByNewsId,
   getComments,
   getPublicNewsWithCategoriesAndSubcategories,
   getUserVote,
@@ -12,6 +13,7 @@ import NewsVoting from "@/app/_components/NewsVoting";
 import CommentSection from "@/app/_components/CommentSection";
 import { Suspense } from "react";
 import Spinner from "@/app/_components/Spinner";
+import Image from "next/image";
 
 export default async function Page({ params }: { params: Params }) {
   const newDetail = await getPublicNewsWithCategoriesAndSubcategories(
@@ -33,7 +35,15 @@ export default async function Page({ params }: { params: Params }) {
   const session = await auth();
   const userId = Number(session?.user?.id);
   const avatar = session?.user?.image;
-  const username = session?.user?.name;
+  const sessionUsername = session?.user?.name;
+  const authorDetails = await getAuthorDetailsByNewsId(newsId);
+
+  if (!authorDetails) {
+    console.error("Author details not found");
+    return;
+  }
+
+  const { fullName, imageURL } = authorDetails;
 
   const initialVote = await getUserVote(newsId, userId);
   const comments = await getComments(newsId);
@@ -53,9 +63,18 @@ export default async function Page({ params }: { params: Params }) {
           {/* Product Details */}
           <div className="w-full md:w-1/2 px-4">
             <h2 className="text-3xl font-bold mb-2">{newsTitle}</h2>
-            <p className="text-gray-600 mb-4">
-              {format(new Date(createdAt), "EEE, MMM dd yyyy")}
-            </p>
+            <div className="text-gray-600 mb-4 flex gap-3 items-center">
+              {`Uploaded on ${format(
+                new Date(createdAt),
+                "EEE, MMM dd yyyy"
+              )} by ${fullName}`}{" "}
+              <img
+                className="w-8 h-8 rounded-full cursor-pointer"
+                src={imageURL || "No photo"}
+                alt={imageURL || "User name"}
+                referrerPolicy="no-referrer"
+              />
+            </div>
 
             <p className="text-gray-700 mb-6">{newsDescription}</p>
             {session?.user ? (
@@ -81,7 +100,7 @@ export default async function Page({ params }: { params: Params }) {
               <Suspense fallback={<Spinner />}>
                 <CommentSection
                   avatarUrl={avatar}
-                  username={username}
+                  username={sessionUsername}
                   newsId={newsId}
                   userId={userId}
                   allComments={comments}

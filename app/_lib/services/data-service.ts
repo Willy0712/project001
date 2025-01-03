@@ -196,6 +196,45 @@ export async function getComments(newsId: number) {
 }
 
 
+export async function getAuthorDetailsByNewsId(newsId: number): Promise<{ fullName: string; imageURL: string } | null> {
+  console.log("newsId in method AuthorDetails", newsId);
+  try {
+    const { data, error } = await supabase
+      .from("news")
+      .select(`
+        userId,
+        app_users (
+          fullName,
+          imageURL
+        )
+      `)
+      .eq("newsId", newsId)
+      .single();
+
+      console.log("data in method AuthorDetails", data);
+
+    if (error) {
+      console.error("Error fetching user's details:", error.message);
+      throw new Error("Failed to fetch user's details");
+    }
+
+    const imageURL = data?.app_users?.imageURL || "";
+
+    if (!data?.app_users?.fullName) {
+      throw new Error("User details not found");
+    }
+
+    const { fullName } = data.app_users;
+    return { fullName, imageURL };
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+
+
+
 
 
 

@@ -11,7 +11,6 @@ const nunito = Nunito({
   weight: ["400", "700"],
   style: ["normal"],
 });
-console.log(nunito);
 
 export const metadata = {
   title: {

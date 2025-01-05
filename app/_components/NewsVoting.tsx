@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/20/solid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { castVote } from "../_lib/actions";
 
 export default function NewsVoting({
@@ -21,8 +21,6 @@ export default function NewsVoting({
 }) {
   const [currentVote, setCurrentVote] = useState<number | null>(initialVote); // Manages the user's current vote
   const [isLoading, setIsLoading] = useState(false); // Handles button loading state
-
-  console.log("newsId client", newsId);
 
   async function handleVote(newVote: number) {
     if (isLoading) return;

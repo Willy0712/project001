@@ -13,7 +13,6 @@ import NewsVoting from "@/app/_components/NewsVoting";
 import CommentSection from "@/app/_components/CommentSection";
 import { Suspense } from "react";
 import Spinner from "@/app/_components/Spinner";
-import Image from "next/image";
 
 export default async function Page({ params }: { params: Params }) {
   const newDetail = await getPublicNewsWithCategoriesAndSubcategories(
@@ -46,6 +45,7 @@ export default async function Page({ params }: { params: Params }) {
   const { fullName, imageURL } = authorDetails;
 
   const initialVote = await getUserVote(newsId, userId);
+  console.log("initialVote page.tsx", initialVote);
   const comments = await getComments(newsId);
 
   return (

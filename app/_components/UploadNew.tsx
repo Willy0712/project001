@@ -6,9 +6,6 @@ import AddressAutocomplete from "./AddressAutoComplete";
 import MDEditor from "./MDEditor";
 import toast from "react-hot-toast";
 import FileInput from "./FileInput";
-
-import { useFormStatus } from "react-dom";
-
 import { useRouter } from "next/navigation";
 import { uploadNewsSchema } from "../_lib/validation";
 import { z } from "zod";

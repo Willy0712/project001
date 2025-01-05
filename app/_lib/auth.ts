@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthConfig, NextAuthResult } from "next-auth";
+import NextAuth, { NextAuthConfig} from "next-auth";
 import Google from "next-auth/providers/google";
 import { createAppUser, getAppUser } from "./services/data-service";
 

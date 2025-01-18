@@ -2,6 +2,7 @@ import React from "react";
 import { searchNews } from "../_lib/actions";
 import Image from "next/image";
 import Link from "next/link";
+import { format } from "date-fns";
 
 type Photo = {
   id: number;
@@ -52,15 +53,20 @@ export default async function PublicNewsCard({ news }: NewsCardProps) {
           <h4 className="text-lg font-semibold">{newsTitle}</h4>
           <p className="text-sm text-gray-600">
             <span className="font-semibold text-gray-800"> Address:</span>{" "}
-            {city}, {state}, {country}
+            <span>{street}</span>
+            <span className="mr-2">{city}</span>
+            <span className="mr-2">{state}</span>
+            <span>{country}</span>
           </p>
           <p className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-800">Description:</span>
+            <span className="font-semibold text-gray-800 mr-2">
+              Description:
+            </span>
             {newsDescription}
           </p>
           <p className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-800"> Created date:</span>{" "}
-            {createdAt}
+            <span className="font-semibold text-gray-800"> Published on </span>{" "}
+            {format(new Date(createdAt), "EEE, MMM dd yyyy hh:mm a")}
           </p>
         </div>
       </div>

@@ -8,7 +8,6 @@ export default async function Page({ params }: { params: Params }) {
 
   return (
     <div>
-      <h1>Search results</h1>
       {news.length > 0 ? (
         news.map((n) => <PublicNewsCard key={n.newsId} news={n} />)
       ) : (

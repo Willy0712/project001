@@ -54,7 +54,6 @@ export default function AddressAutocomplete({
   };
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
-    console.log("Selected Suggestion:", suggestion);
     // Extract relevant address details from the suggestion
     const structuredAddress = {
       street: suggestion.address.road || "", // Default to empty string if not provided
@@ -65,7 +64,6 @@ export default function AddressAutocomplete({
       latitude: suggestion.lat,
       longitude: suggestion.lon,
     };
-    console.log("Structured Address:", structuredAddress);
 
     // Update the input value with the selected suggestion's display name
     setQuery(suggestion.display_name);

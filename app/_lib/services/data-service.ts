@@ -144,12 +144,6 @@ export async function getPhotosForNews(newsId: number) {
   return data;
 }
 
-/**
- * Fetches the user's vote for a specific news item.
- * @param newsId - The ID of the news item.
- * @param userId - The ID of the user.
- * @returns The vote value (1 for upvote, -1 for downvote, or 0 if no vote).
- */
 export async function getUserVote(newsId: number, userId: number): Promise<number | null> {
   try {
     const { data, error } = await supabase
@@ -179,7 +173,10 @@ export async function getComments(newsId: number) {
   try {
     const { data, error } = await supabase
       .from("comments")
-      .select("commentId, commentText, createdAt, userId")
+      .select(`commentId, commentText, createdAt, userId, app_users (
+      fullName,
+      imageURL
+    )`)
       .eq("newsId", newsId)
       .order("createdAt", { ascending: true });
 
@@ -197,7 +194,6 @@ export async function getComments(newsId: number) {
 
 
 export async function getAuthorDetailsByNewsId(newsId: number): Promise<{ fullName: string; imageURL: string } | null> {
-  console.log("newsId in method AuthorDetails", newsId);
   try {
     const { data, error } = await supabase
       .from("news")
@@ -211,7 +207,6 @@ export async function getAuthorDetailsByNewsId(newsId: number): Promise<{ fullNa
       .eq("newsId", newsId)
       .single();
 
-      console.log("data in method AuthorDetails", data);
 
     if (error) {
       console.error("Error fetching user's details:", error.message);
@@ -231,6 +226,59 @@ export async function getAuthorDetailsByNewsId(newsId: number): Promise<{ fullNa
     return null;
   }
 }
+
+
+export async function getNewsById(newsId: number) {
+  try {
+    const { data, error } = await supabase
+      .from("news")
+      .select(
+        `
+        newsId,
+        newsTitle,
+        newsDescription,
+        createdAt,
+        modifiedAt,
+        street,
+        city,
+        state,
+        country,
+        latitude,
+        longitude,
+        userId,
+        categoryId:categories (
+          categoryId,
+          categoryName
+        ),
+        subCategoryId: sub_categories (
+          subCategoryId,
+          subCategoryName
+        ),
+        photos:media_table (
+          id,
+          url,
+          type,
+          createdAt
+        )
+      `
+      )
+      .eq("newsId", newsId)
+      .single();
+
+
+    if (error) {
+      console.error("Error fetching news by ID:", error.message);
+      throw new Error("Failed to fetch news by ID.");
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Unexpected error fetching news by ID:", err);
+    throw new Error("Unexpected error occurred while fetching news.");
+  }
+}
+
+
 
 
 

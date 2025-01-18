@@ -1,16 +1,24 @@
 "use client";
+
 import React, { useState } from "react";
+
 type FileUploadProps = {
   name: string;
-  onFilesChange: (files: File[]) => void; // Callback to pass files to parent
+  files?: File[]; // Optional initial files from the parent
+  onFilesChange: (files: File[]) => void; // Callback to pass updated files to the parent
 };
-export default function FileUpload({ name, onFilesChange }: FileUploadProps) {
-  const [files, setFiles] = useState<File[]>([]);
+
+export default function FileUpload({
+  name,
+  files = [],
+  onFilesChange,
+}: FileUploadProps) {
+  const [localFiles, setLocalFiles] = useState<File[]>(files); // Initialize state with files prop
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    const totalFiles = files.length + selectedFiles.length;
+    const totalFiles = localFiles.length + selectedFiles.length;
 
     if (totalFiles > 5) {
       setError("You can upload a maximum of 5 files.");
@@ -18,15 +26,15 @@ export default function FileUpload({ name, onFilesChange }: FileUploadProps) {
     }
 
     setError(null); // Clear any existing error
-    const updatedFiles = [...files, ...selectedFiles];
-    setFiles(updatedFiles);
-    onFilesChange(updatedFiles);
+    const updatedFiles = [...localFiles, ...selectedFiles];
+    setLocalFiles(updatedFiles);
+    onFilesChange(updatedFiles); // Notify parent of the updated files
   };
 
   const handleRemoveFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index);
-    setFiles(updatedFiles);
-    onFilesChange(updatedFiles); // Pass updated files to parent
+    const updatedFiles = localFiles.filter((_, i) => i !== index);
+    setLocalFiles(updatedFiles);
+    onFilesChange(updatedFiles); // Notify parent of the updated files
   };
 
   return (
@@ -75,7 +83,7 @@ export default function FileUpload({ name, onFilesChange }: FileUploadProps) {
       <div className="mt-4">
         {error && <p className="text-red-500 text-xs">{error}</p>}
         <ul className="list-disc pl-6">
-          {files.map((file, index) => (
+          {localFiles.map((file, index) => (
             <li key={index} className="text-gray-600 text-sm">
               {file.name}{" "}
               <button

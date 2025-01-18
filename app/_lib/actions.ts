@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { uploadNewsSchemaServer } from "./validation";
 import { ZodError } from "zod";
 import { getNewsWithCategoriesAndSubcategories } from "./services/data-service";
-import { redirect } from "next/dist/server/api-utils";
+import { redirect } from "next/navigation";
 
 const supabaseUrl = process.env.SUPABASE_URL as string;
 
@@ -178,7 +178,6 @@ if (mediaError) {
     .from("news")
     .delete()
     .eq("newsId", newId);
-    console.log("error", error)
 
   if (error) {
     throw new Error("News could not be deleted");
@@ -189,7 +188,6 @@ if (mediaError) {
 
 
 export async function searchNews(query: string) {
-  console.log("query", query)
   const { data, error } = await supabase
   .from("news")
   .select(`
@@ -210,7 +208,6 @@ export async function searchNews(query: string) {
   `)
   .or(`city.ilike.%${query}%,state.ilike.%${query}%,country.ilike.%${query}%`)
   .order("createdAt", { ascending: false });
-  console.log("data", data)
 
   revalidatePath(`/listnews/${query}`)
 
@@ -233,9 +230,6 @@ export async function castVote(userId: number, newsId: number, voteValue: number
     .eq("newsId", newsId)
     .single();
 
-    console.log("existingVote", existingVote)
-    console.log("userId", userId)
-    console.log("newsId", newsId)
 
   // Calculate changes
   const upvotesChange = voteValue === 1 ? 1 : existingVote?.voteValue === 1 ? -1 : 0;
@@ -244,10 +238,7 @@ export async function castVote(userId: number, newsId: number, voteValue: number
     ? voteValue - (existingVote.voteValue || 0)
     : voteValue;
 
-    console.log("upvotesChange", upvotesChange)
-    console.log("downvotesChange", downvotesChange)
-    console.log("voteScoreChange", voteScoreChange)
-
+ 
   if (existingVote) {
     if (existingVote.voteValue === voteValue) {
       // Reset vote
@@ -282,9 +273,7 @@ export async function castVote(userId: number, newsId: number, voteValue: number
   const updatedDownvotes = (currentNews?.downVotes || 0) + downvotesChange;
   const updatedVoteScore = (currentNews?.votesScore || 0) + voteScoreChange;
 
-  console.log("updatedUpvotes", updatedUpvotes)
-  console.log("updatedDownvotes", updatedDownvotes)
-  console.log("updatedVoteScore", updatedVoteScore)
+
 
   // Update the news table
   const { error: updateError } = await supabase
@@ -354,24 +343,186 @@ export async function deleteComment(commentId: number) {
   }
 }
 
-export async function updateComment(commentId: number, commentText: string) {
-  try {
-    const { error } = await supabase
-      .from("comments")
-      .update({ commentText, updatedAt: new Date().toISOString() })
-      .eq("commentId", commentId);
+type UpdateCommentInput = {
+  commentId: number;
+  commentText: string;
+};
 
-    if (error) {
-      console.error("Error updating comment:", error.message);
-      return { success: false, error: "Failed to update comment" };
+export async function updateComment(input: UpdateCommentInput): Promise<{ success: boolean }> {
+  const { commentId, commentText } = input;
+
+  const { error } = await supabase
+    .from("comments")
+    .update({ commentText: commentText })
+    .eq("commentId", commentId);
+
+  if (error) {
+    console.error("Failed to update comment:", error.message);
+    return { success: false };
+  }
+
+  return { success: true };
+}
+
+// app/_lib/actions/address.ts
+
+export async function fetchAddressFromNominatim({
+  street,
+  city,
+  state,
+  country,
+}: {
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}) {
+  const queryParts = [street, city, state, country].filter(Boolean).join(", ");
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+    queryParts
+  )}&format=json&addressdetails=1`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Nominatim API returned ${response.status}`);
     }
 
-    return { success: true };
-  } catch (err) {
-    console.error("Error updating comment:", err);
-    return { success: false, error: "Failed to update comment" };
+    const data = await response.json();
+
+    if (data.length === 0) {
+      console.warn("No results from Nominatim for:", queryParts);
+      return null;
+    }
+
+    return data[0]; // Return the first matching result
+  } catch (error) {
+    console.error("Error fetching address from Nominatim:", error);
+    return null;
   }
 }
+
+
+type UpdateNewResult = {
+  success: boolean;
+  validationErrors?: Record<string, string>;
+  error?: string;
+};
+
+export async function updateNew(
+  newsId: number,
+  formData: FormData
+): Promise<UpdateNewResult> {
+
+  try {
+    // Extract fields from FormData
+    const title = formData.get("title") as string | null;
+    const categoryId = formData.get("categoryId") as string | null;
+    const subCategoryId = formData.get("subCategoryId") as string | null;
+    const content = formData.get("content") as string | null;
+    const selectedAddress = formData.get("selectedAddress") as string | null;
+    const photosToRemove = JSON.parse(formData.get("photosToRemove") as string) as number[]; // Expecting JSON array
+
+
+    // Validate required fields
+    if (!title || !categoryId || !content || !selectedAddress) {
+      return {
+        success: false,
+        validationErrors: {
+          title: title ? "" : "Title is required.",
+          categoryId: categoryId ? "" : "Category is required.",
+          content: content ? "" : "Content is required.",
+          selectedAddress: selectedAddress
+            ? ""
+            : "Address selection is required.",
+        },
+      };
+    }
+
+    // Parse address from JSON
+    const address = JSON.parse(selectedAddress);
+
+    // Update news record
+    const { error: newsUpdateError } = await supabase
+      .from("news")
+      .update({
+        newsTitle: title,
+        newsDescription: content,
+        categoryId: Number(categoryId),
+        subCategoryId: subCategoryId ? Number(subCategoryId) : null,
+        street: address.street || null,
+        city: address.city || null,
+        state: address.state || null,
+        country: address.country || null,
+        latitude: address.latitude || null,
+        longitude: address.longitude || null,
+        modifiedAt: new Date().toISOString(),
+      })
+      .eq("newsId", newsId);
+
+    if (newsUpdateError) {
+      console.error("Error updating news:", newsUpdateError.message);
+      return { success: false, error: "Failed to update news record." };
+    }
+
+    // Handle file uploads
+    const files = formData.getAll("image") as File[];
+    console.log(files)
+    if (photosToRemove.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("media_table")
+        .delete()
+        .in("id", photosToRemove);
+
+      if (deleteError) {
+        console.error("Error removing photos:", deleteError.message);
+        return { success: false, error: "Failed to remove photos." };
+      }
+    }
+
+    // Upload new files and save their metadata
+    for (const file of files) {
+      const fileName = `${Math.random()}-${file.name}`.replace("/", "");
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("pictures")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error("Error uploading file:", uploadError.message);
+        return { success: false, error: "Failed to upload file." };
+      }
+
+      const filePath = `${supabase.storage.from("pictures").getPublicUrl(uploadData?.path).data.publicUrl}`;
+
+      // Insert file metadata into `media_table`
+      const { error: mediaInsertError } = await supabase.from("media_table").insert({
+        newsId,
+        url: filePath,
+        type: file.type,
+      });
+
+      if (mediaInsertError) {
+        console.error("Error inserting file metadata:", mediaInsertError.message);
+        return { success: false, error: "Failed to save file metadata." };
+      }
+    }
+
+    revalidatePath(`/account/newdetail/${newsId}`);
+    revalidatePath(`/account/news`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+
+
+
+
+
 
 
 

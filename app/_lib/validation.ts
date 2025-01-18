@@ -56,3 +56,13 @@ export const uploadNewsSchemaServer = z.object({
     .min(1, "At least one image must be uploaded.")
     .max(5, "You can upload up to 5 images."),
 });
+
+export const updateNewSchema = z.object({
+  title: z.string().nonempty("Title is required"),
+  categoryId: z.number(),
+  subCategoryId: z.number().optional(),
+  content: z.string().nonempty("Content is required"),
+  selectedAddress: z.string().nonempty("Address is required"),
+  userId: z.number(),
+});
+

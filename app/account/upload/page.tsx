@@ -12,6 +12,7 @@ const UploadNew = dynamic(() => import("@/app/_components/UploadNew"), {
 
 export default async function Page() {
   const categories = await getCategoriesWithSubcategories();
+
   const session = await auth();
   if (!session) {
     return null;

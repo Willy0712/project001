@@ -29,24 +29,25 @@ export default async function Page({ params }: { params: Params }) {
     votesScore,
   } = newDetail;
 
-  console.log("newsId", newsId);
-
   const session = await auth();
   const userId = Number(session?.user?.id);
-  const avatar = session?.user?.image;
-  const sessionUsername = session?.user?.name;
   const authorDetails = await getAuthorDetailsByNewsId(newsId);
 
   if (!authorDetails) {
-    console.error("Author details not found");
     return;
   }
 
   const { fullName, imageURL } = authorDetails;
 
   const initialVote = await getUserVote(newsId, userId);
-  console.log("initialVote page.tsx", initialVote);
-  const comments = await getComments(newsId);
+  const allComments = await getComments(newsId);
+  const comments = allComments.map(({ app_users, ...comment }) => ({
+    ...comment,
+    isEditing: false, // Tracks if the comment is in editing mode
+    editText: comment.commentText || "", // Holds the editable text (initialized to the original text)
+    fullName: app_users?.fullName || "Anonymous", // Extract fullName from app_users
+    imageURL: app_users?.imageURL || "/placeholder-avatar.png", // Extract imageURL from app_users
+  }));
 
   return (
     <div className="bg-gray-100">
@@ -99,8 +100,6 @@ export default async function Page({ params }: { params: Params }) {
             {session?.user ? (
               <Suspense fallback={<Spinner />}>
                 <CommentSection
-                  avatarUrl={avatar}
-                  username={sessionUsername}
                   newsId={newsId}
                   userId={userId}
                   allComments={comments}

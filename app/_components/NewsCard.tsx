@@ -73,10 +73,12 @@ export default function NewsCard({ news, onDelete }: NewsListProps) {
         {newsDescription}
 
         <div className="flex gap-5 mt-auto items-baseline">
-          <p className="text-xl font-semibold">${street}</p>
-          <p className="text-lg">${city}</p>
-          <p className="text-lg">${state}</p>
-          <p className="text-lg">${country}</p>
+          <p className="text-lg">
+            <span>{street}</span>
+            <span className="mr-2">{city}</span>
+            <span className="mr-2">{state}</span>
+            <span>{country}</span>
+          </p>
         </div>
       </div>
 
